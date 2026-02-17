@@ -4,17 +4,5 @@
   "version": "0.1.0",
   "author": {
     "name": "Kan-Bull"
-  },
-  "homepage": "https://github.com/Kan-Bull/aegis",
-  "category": "workflow",
-  "keywords": [
-    "framework",
-    "agents",
-    "quality",
-    "security",
-    "testing",
-    "pre-push",
-    "adaptive",
-    "workflow"
-  ]
+  }
 }
