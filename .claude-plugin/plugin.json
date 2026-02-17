@@ -1,0 +1,20 @@
+{
+  "name": "aegis",
+  "description": "Structured AI development framework for Claude Code. Adaptive complexity, epistemic rigor, total ownership, 9 specialized agents, and pre-push quality gates.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Kan-Bull"
+  },
+  "homepage": "https://github.com/Kan-Bull/aegis",
+  "category": "workflow",
+  "keywords": [
+    "framework",
+    "agents",
+    "quality",
+    "security",
+    "testing",
+    "pre-push",
+    "adaptive",
+    "workflow"
+  ]
+}

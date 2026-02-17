@@ -1,0 +1,26 @@
+{
+  "name": "aegis-marketplace",
+  "owner": {
+    "name": "Kan-Bull"
+  },
+  "plugins": [
+    {
+      "name": "aegis",
+      "source": "./",
+      "description": "Structured AI development framework. Adaptive complexity, epistemic rigor, total ownership, 9 specialized agents, and pre-push quality gates.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Kan-Bull"
+      },
+      "category": "workflow",
+      "keywords": [
+        "framework",
+        "agents",
+        "quality",
+        "security",
+        "testing",
+        "workflow"
+      ]
+    }
+  ]
+}
