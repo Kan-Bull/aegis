@@ -16,7 +16,17 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 
 # --- Read stdin JSON ---
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | grep -o '"command"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"$//' || echo "")
+
+# Use python3 for reliable JSON parsing (handles escaped quotes, special chars)
+COMMAND=$(echo "$INPUT" | python3 -c '
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    cmd = data.get("tool_input", {}).get("command", "")
+    print(cmd)
+except:
+    print("")
+' 2>/dev/null || echo "")
 
 # --- Only intercept git push ---
 if ! echo "$COMMAND" | grep -qE 'git\s+push|gh\s+repo\s+create.*--push|gh\s+pr\s+merge'; then
