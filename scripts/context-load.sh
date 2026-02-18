@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Aegis — context-load hook
 # Event: SessionStart
-# Purpose: Silently gather project context and feed it back to Claude via stderr.
+# Purpose: Detect project context and inject it into Claude's session.
 #
-# Claude Code feeds stderr back into the conversation context.
-# This hook reads the project structure so Claude starts every session informed.
+# SessionStart hooks: exit 0 + stdout JSON → injected into Claude's context.
+# Uses the documented hookSpecificOutput.additionalContext format.
+# Note: Known Claude Code bugs may silently drop this for new sessions.
+# The SKILL.md auto-activation is the primary context loading mechanism.
 
 set -euo pipefail
 
@@ -14,7 +16,7 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 STACKS=""
 [ -f "$PROJECT_DIR/tsconfig.json" ] && STACKS="${STACKS}typescript "
 [ -f "$PROJECT_DIR/package.json" ] && STACKS="${STACKS}node "
-[ -f "$PROJECT_DIR/pyproject.toml" ] || [ -f "$PROJECT_DIR/setup.py" ] || [ -f "$PROJECT_DIR/requirements.txt" ] && STACKS="${STACKS}python "
+{ [ -f "$PROJECT_DIR/pyproject.toml" ] || [ -f "$PROJECT_DIR/setup.py" ] || [ -f "$PROJECT_DIR/requirements.txt" ]; } && STACKS="${STACKS}python "
 ls "$PROJECT_DIR"/*.csproj &>/dev/null && STACKS="${STACKS}csharp "
 ls "$PROJECT_DIR"/*.sln &>/dev/null && STACKS="${STACKS}dotnet "
 [ -f "$PROJECT_DIR/Cargo.toml" ] && STACKS="${STACKS}rust "
@@ -65,10 +67,25 @@ if [ -d "$PROJECT_DIR/.git" ]; then
   fi
 fi
 
-# --- Output to stderr (Claude sees this) ---
-echo >&2 "[Aegis] Session context loaded"
-echo >&2 "  Stack: ${STACKS:-none detected}"
-echo >&2 "  Tests: ${TESTS}"
-echo >&2 "  Linter: ${LINTER}"
-echo >&2 "  Memory: ${MEMORY}"
-echo >&2 "  Git: ${GIT_BRANCH} (${GIT_DIRTY})"
+# --- Build context string ---
+CONTEXT="[Aegis] Session context loaded
+  Stack: ${STACKS:-none detected}
+  Tests: ${TESTS}
+  Linter: ${LINTER}
+  Memory: ${MEMORY}
+  Git: ${GIT_BRANCH} (${GIT_DIRTY})"
+
+# --- Output as documented JSON to stdout ---
+# Escaping newlines for valid JSON
+ESCAPED=$(echo "$CONTEXT" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')
+
+cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": ${ESCAPED}
+  }
+}
+EOF
+
+exit 0

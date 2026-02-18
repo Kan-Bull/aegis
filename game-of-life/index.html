@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game of Life</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 { margin-bottom: 12px; font-size: 1.4rem; color: #c0c0ff; }
+    canvas {
+      border: 1px solid #333;
+      cursor: crosshair;
+      background: #0f0f23;
+    }
+    .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      padding: 6px 16px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background: #16213e;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    button:hover { background: #1a1a5e; }
+    button.active { background: #0f3460; border-color: #c0c0ff; }
+    .info {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Conway's Game of Life</h1>
+  <canvas id="grid"></canvas>
+  <div class="controls">
+    <button id="playBtn">Play</button>
+    <button id="stepBtn">Step</button>
+    <button id="clearBtn">Clear</button>
+    <button id="randomBtn">Random</button>
+    <label style="margin-left: 12px; font-size: 0.85rem;">
+      Vitesse
+      <input id="speed" type="range" min="1" max="30" value="10" style="vertical-align: middle;">
+    </label>
+  </div>
+  <div class="info">
+    Génération: <span id="gen">0</span> &nbsp;|&nbsp; Cellules vivantes: <span id="pop">0</span>
+  </div>
+
+  <script>
+    const COLS = 60;
+    const ROWS = 40;
+    const CELL = 12;
+
+    const canvas = document.getElementById('grid');
+    const ctx = canvas.getContext('2d');
+    canvas.width = COLS * CELL;
+    canvas.height = ROWS * CELL;
+
+    let grid = createGrid();
+    let running = false;
+    let generation = 0;
+    let timerId = null;
+
+    function createGrid() {
+      return Array.from({ length: ROWS }, () => new Uint8Array(COLS));
+    }
+
+    function countNeighbors(g, r, c) {
+      let count = 0;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = (r + dr + ROWS) % ROWS;
+          const nc = (c + dc + COLS) % COLS;
+          count += g[nr][nc];
+        }
+      }
+      return count;
+    }
+
+    function nextGeneration() {
+      const next = createGrid();
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const n = countNeighbors(grid, r, c);
+          if (grid[r][c]) {
+            next[r][c] = (n === 2 || n === 3) ? 1 : 0;
+          } else {
+            next[r][c] = (n === 3) ? 1 : 0;
+          }
+        }
+      }
+      grid = next;
+      generation++;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let pop = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[r][c]) {
+            ctx.fillStyle = '#4fc3f7';
+            ctx.fillRect(c * CELL + 1, r * CELL + 1, CELL - 2, CELL - 2);
+            pop++;
+          }
+        }
+      }
+      // Grid lines
+      ctx.strokeStyle = '#1a1a3e';
+      for (let r = 0; r <= ROWS; r++) {
+        ctx.beginPath();
+        ctx.moveTo(0, r * CELL);
+        ctx.lineTo(canvas.width, r * CELL);
+        ctx.stroke();
+      }
+      for (let c = 0; c <= COLS; c++) {
+        ctx.beginPath();
+        ctx.moveTo(c * CELL, 0);
+        ctx.lineTo(c * CELL, canvas.height);
+        ctx.stroke();
+      }
+      document.getElementById('gen').textContent = generation;
+      document.getElementById('pop').textContent = pop;
+    }
+
+    function step() {
+      nextGeneration();
+      draw();
+    }
+
+    function startLoop() {
+      const fps = parseInt(document.getElementById('speed').value);
+      timerId = setInterval(step, 1000 / fps);
+    }
+
+    function togglePlay() {
+      running = !running;
+      const btn = document.getElementById('playBtn');
+      if (running) {
+        btn.textContent = 'Pause';
+        btn.classList.add('active');
+        startLoop();
+      } else {
+        btn.textContent = 'Play';
+        btn.classList.remove('active');
+        clearInterval(timerId);
+      }
+    }
+
+    // Controls
+    document.getElementById('playBtn').addEventListener('click', togglePlay);
+
+    document.getElementById('stepBtn').addEventListener('click', () => {
+      if (!running) step();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (running) togglePlay();
+      grid = createGrid();
+      generation = 0;
+      draw();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          grid[r][c] = Math.random() < 0.3 ? 1 : 0;
+        }
+      }
+      generation = 0;
+      draw();
+    });
+
+    document.getElementById('speed').addEventListener('input', () => {
+      if (running) {
+        clearInterval(timerId);
+        startLoop();
+      }
+    });
+
+    // Click to toggle cells
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const c = Math.floor((e.clientX - rect.left) / CELL);
+      const r = Math.floor((e.clientY - rect.top) / CELL);
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+        grid[r][c] = grid[r][c] ? 0 : 1;
+        draw();
+      }
+    });
+
+    // Draw on drag
+    let painting = false;
+    canvas.addEventListener('mousedown', (e) => {
+      painting = true;
+    });
+    canvas.addEventListener('mouseup', () => { painting = false; });
+    canvas.addEventListener('mouseleave', () => { painting = false; });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!painting) return;
+      const rect = canvas.getBoundingClientRect();
+      const c = Math.floor((e.clientX - rect.left) / CELL);
+      const r = Math.floor((e.clientY - rect.top) / CELL);
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+        grid[r][c] = 1;
+        draw();
+      }
+    });
+
+    // Initial draw
+    draw();
+  </script>
+</body>
+</html>

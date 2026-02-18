@@ -49,6 +49,20 @@ export GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
 
 Playwright, Context7, and DeepWiki work without tokens.
 
+### Post-install — activate auto-loading
+
+The plugin installs agents, hooks, and commands. But the behavioral framework (the core of Aegis) needs a one-line trigger in your **global** `CLAUDE.md`:
+
+```bash
+echo 'Always load the aegis:aegis-core skill at the start of every task.' >> ~/.claude/CLAUDE.md
+```
+
+This ensures Aegis activates on **every project, every session**, without manual `/aegis:core` invocation.
+
+> **Why?** Plugin skills don't auto-activate reliably yet (known Claude Code limitation). The global `CLAUDE.md` is read natively at every session start — it's the most reliable trigger available.
+
+You can also add your own global rules to `~/.claude/CLAUDE.md` — language preferences, commit conventions, coding style. Anything you find yourself repeating across projects belongs there.
+
 ---
 
 ## What's Inside
