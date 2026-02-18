@@ -49,17 +49,63 @@ export GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
 
 Playwright, Context7, and DeepWiki work without tokens.
 
-### Post-install — activate auto-loading
+### Post-install — activate framework and hooks
 
-The plugin installs agents, hooks, and commands. But the behavioral framework (the core of Aegis) needs a one-line trigger in your **global** `CLAUDE.md`:
+The plugin provides agents, commands, and MCP bridges. But two things need global installation because the Claude Code plugin system doesn't reliably auto-activate skills or hooks yet:
+
+**1. Behavioral framework (required)**
+
+Add one line to your global `CLAUDE.md`:
 
 ```bash
 echo 'Always load the aegis:aegis-core skill at the start of every task.' >> ~/.claude/CLAUDE.md
 ```
 
-This ensures Aegis activates on **every project, every session**, without manual `/aegis:core` invocation.
+This ensures Aegis activates on **every project, every session**.
 
-> **Why?** Plugin skills don't auto-activate reliably yet (known Claude Code limitation). The global `CLAUDE.md` is read natively at every session start — it's the most reliable trigger available.
+**2. Quality gate hooks (required)**
+
+Copy the hook scripts and register them in your settings:
+
+```bash
+# Copy scripts
+mkdir -p ~/.claude/hooks/aegis
+cp scripts/pre-push.sh scripts/mcp-push-guard.sh scripts/context-load.sh ~/.claude/hooks/aegis/
+chmod +x ~/.claude/hooks/aegis/*.sh
+```
+
+Then add the hooks to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/aegis/context-load.sh", "timeout": 10 }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/aegis/pre-push.sh", "timeout": 120 }]
+      },
+      {
+        "matcher": "mcp__github__push_files",
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/aegis/mcp-push-guard.sh", "timeout": 5 }]
+      },
+      {
+        "matcher": "mcp__github__create_or_update_file",
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/aegis/mcp-push-guard.sh", "timeout": 5 }]
+      }
+    ]
+  }
+}
+```
+
+Merge this into your existing settings — don't replace the whole file.
+
+> **Why manual?** Plugin hooks aren't registered by Claude Code yet (known limitation). Global settings hooks are the reliable path.
 
 You can also add your own global rules to `~/.claude/CLAUDE.md` — language preferences, commit conventions, coding style. Anything you find yourself repeating across projects belongs there.
 
