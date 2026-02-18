@@ -4,6 +4,7 @@ description: >
   Provides adaptive complexity assessment, epistemic rigor, total ownership,
   and structured feedback for professional-grade AI-assisted development.
 version: 0.1.0
+user-invocable: false
 ---
 
 # Aegis Framework
