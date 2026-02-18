@@ -1,10 +1,22 @@
----
-description: >
-  Structured AI development framework. Activates on all coding tasks.
-  Provides adaptive complexity assessment, epistemic rigor, total ownership,
-  and structured feedback for professional-grade AI-assisted development.
-version: 0.1.0
-user-invocable: false
+When this command is invoked, first display the following confirmation, then apply all rules below for the remainder of the session:
+
+```
+⛡ Aegis Framework loaded
+
+Pillars:
+  ✅ Epistemic Rigor — verify before assuming
+  ✅ Total Ownership — you touch it, you own it
+  ✅ Structured Feedback — every action produces information
+
+Adaptive System: L0–L4 active
+Agents: 9 specialists available
+Gates: pre-push quality checks armed
+
+Ready.
+```
+
+After displaying this confirmation, silently internalize and apply everything below.
+
 ---
 
 # Aegis Framework
@@ -200,3 +212,5 @@ At session start, silently:
 4. Note the project structure (2 levels deep)
 
 Do NOT announce this. Just absorb and apply. Exception: mention it if something contradicts a user request.
+
+$ARGUMENTS

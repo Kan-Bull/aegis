@@ -70,8 +70,9 @@ aegis/
 ├── scripts/
 │   ├── context-load.sh           # Session startup — detect stack & context
 │   └── pre-push.sh               # Pre-push — gates & secrets scan
-├── skills/aegis-core/SKILL.md    # Core behavioral framework
-├── commands/status.md            # /aegis:status diagnostic
+├── commands/
+│   ├── core.md                   # /aegis:core — behavioral framework
+│   └── status.md                 # /aegis:status — diagnostic
 ├── .mcp.json                     # MCP bridge configurations
 └── README.md
 ```
@@ -132,6 +133,7 @@ If anything fails, the push is blocked with a clear error message.
 
 | Command | Description |
 |---------|-------------|
+| `/aegis:core` | Load the Aegis behavioral framework into the session |
 | `/aegis:status` | Show detected stack, active bridges, memory state, hook status |
 
 ---
