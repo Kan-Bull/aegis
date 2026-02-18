@@ -22,6 +22,26 @@
             "timeout": 120
           }
         ]
+      },
+      {
+        "matcher": "mcp__github__push_files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/mcp-push-guard.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__github__create_or_update_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/mcp-push-guard.sh\"",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }

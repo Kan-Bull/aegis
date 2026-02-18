@@ -19,7 +19,7 @@ On top of that, Aegis provides:
 - **Adaptive complexity** — Tasks are assessed on a 0–4 scale. Typo fixes get zero overhead. System designs get structured plans and specialized agents.
 - **9 specialized agents** — Architect, Quality, Security, Frontend, Backend, Database, DevOps, Performance, Documentation. Invoked automatically at Level 3–4.
 - **Pre-push quality gates** — Automatic linting, type checking, testing, and secrets scanning before any `git push`. Stack-aware (TypeScript, Python, C#, Rust, Go).
-- **4 MCP bridges** — GitHub, Playwright, Context7, DeepWiki.
+- **3 MCP bridges** — Playwright, Context7, DeepWiki. GitHub MCP is user-configured (requires token).
 
 ---
 
@@ -69,11 +69,13 @@ aegis/
 ├── hooks/hooks.json              # Lifecycle hooks
 ├── scripts/
 │   ├── context-load.sh           # Session startup — detect stack & context
-│   └── pre-push.sh               # Pre-push — gates & secrets scan
+│   ├── pre-push.sh               # Pre-push — gates & secrets scan
+│   └── mcp-push-guard.sh         # Block direct MCP pushes → use git push
+├── skills/aegis-core/SKILL.md     # Auto-activating behavioral framework
 ├── commands/
-│   ├── core.md                   # /aegis:core — behavioral framework
+│   ├── core.md                   # /aegis:core — manual reload with feedback
 │   └── status.md                 # /aegis:status — diagnostic
-├── .mcp.json                     # MCP bridge configurations
+├── .mcp.json                     # MCP bridge configurations (3 bridges)
 └── README.md
 ```
 
@@ -127,6 +129,8 @@ When Claude runs `git push`, Aegis intercepts and runs:
 
 If anything fails, the push is blocked with a clear error message.
 
+**MCP push guard:** Direct pushes via GitHub MCP (`push_files`, `create_or_update_file`) are blocked. Claude is redirected to use `git push` so the quality gates can run.
+
 ---
 
 ## Commands
@@ -140,12 +144,12 @@ If anything fails, the push is blocked with a clear error message.
 
 ## Bridges
 
-| Bridge | Token Required | Purpose |
-|--------|---------------|---------|
-| GitHub | `GITHUB_TOKEN` | Repos, issues, PRs, code search |
-| Playwright | No | Browser automation, visual testing |
-| Context7 | No | Library documentation lookup |
-| DeepWiki | No | GitHub repository documentation |
+| Bridge | Bundled | Token Required | Purpose |
+|--------|---------|---------------|---------|
+| Playwright | Yes | No | Browser automation, visual testing |
+| Context7 | Yes | No | Library documentation lookup |
+| DeepWiki | Yes | No | GitHub repository documentation |
+| GitHub | No (user) | `GITHUB_TOKEN` | Repos, issues, PRs, code search |
 
 ---
 
