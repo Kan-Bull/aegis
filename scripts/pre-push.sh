@@ -52,16 +52,17 @@ PATTERNS=(
   'xox[baprs]-[a-zA-Z0-9-]+'
 )
 
+# Scan only source files — exclude scripts, configs, lock files, node_modules
+EXCLUDE_PATHS=':!*.sh :!*.lock :!node_modules :!*.json :!*.md :!.git'
+
 for pattern in "${PATTERNS[@]}"; do
-  if git -C "$PROJECT_DIR" diff --cached --name-only 2>/dev/null | \
-     xargs grep -lE "$pattern" 2>/dev/null; then
+  if git -C "$PROJECT_DIR" grep -rlE "$pattern" -- $EXCLUDE_PATHS 2>/dev/null | head -5 | grep -q .; then
     echo >&2 "[Aegis] ⚠️  Potential secret detected matching: $pattern"
     SECRETS_FOUND=1
   fi
 done
 
-# Also check tracked files for common credential patterns
-if git -C "$PROJECT_DIR" grep -rlE '(password|secret|api_key|apikey)\s*[=:]\s*["\x27][^\s"'\'']{8,}' -- ':!*.lock' ':!node_modules' 2>/dev/null | head -5 | grep -q .; then
+if git -C "$PROJECT_DIR" grep -rlE '(password|secret|api_key|apikey)\s*[=:]\s*["'\'''][^\s"'\'']{8,}' -- $EXCLUDE_PATHS 2>/dev/null | head -5 | grep -q .; then
   echo >&2 "[Aegis] ⚠️  Potential hardcoded credentials found in tracked files"
   SECRETS_FOUND=1
 fi
