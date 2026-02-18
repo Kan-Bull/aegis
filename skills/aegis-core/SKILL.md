@@ -1,5 +1,4 @@
 ---
-name: Aegis Core
 description: >
   Structured AI development framework. Activates on all coding tasks.
   Provides adaptive complexity assessment, epistemic rigor, total ownership,
